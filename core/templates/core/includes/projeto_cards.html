@@ -1,0 +1,160 @@
+<div class="row g-4" id="projeto-grid">
+    {% for projeto in projetos %}
+    <div class="col-lg-4 col-md-6">
+        <div class="card card-system h-100 shadow-lg border-0">
+            <div class="preview-container position-relative {% if not projeto.preview_video %}no-video{% endif %}" style="height: 240px; border-bottom: 2px solid rgba(255,255,255,0.05);">
+                <img src="{{ projeto.thumbnail.url }}" class="preview-img" alt="{{ projeto.nome }}">
+                {% if projeto.preview_video %}
+                <video class="preview-video" loop muted playsinline autoplay>
+                    <source src="{{ projeto.preview_video.url }}" type="video/mp4">
+                </video>
+                {% endif %}
+                <div class="position-absolute top-0 end-0 m-3">
+                    <span class="badge badge-zenith backdrop-blur border-0">{{ projeto.categoria.nome }}</span>
+                </div>
+            </div>
+            <div class="card-body p-4 d-flex flex-column" style="background: linear-gradient(180deg, rgba(30, 41, 59, 0.5) 0%, rgba(15, 23, 42, 0.5) 100%);">
+                <h4 class="fw-bold text-white mb-2">{{ projeto.nome }}</h4>
+                <p class="text-muted small mb-4 flex-grow-1" style="font-size: 0.9rem; line-height: 1.5;">{{ projeto.descricao_curta }}</p>
+                
+                <div class="mb-4">
+                    <p class="small text-muted mb-2 fw-bold text-uppercase" style="letter-spacing: 0.05em;">Tech Stack</p>
+                    <div class="d-flex flex-wrap gap-1">
+                        {% for tech in projeto.tecnologias_list %}
+                            <span class="text-info small">{{ tech }}{% if not forloop.last %}, {% endif %}</span>
+                        {% endfor %}
+                    </div>
+                </div>
+
+                <div class="d-flex align-items-center {% if projeto.mostrar_live_view and projeto.link_demo or projeto.mostrar_repo and projeto.link_repo %}justify-content-between{% else %}justify-content-center{% endif %} pt-3 border-top border-secondary-subtle">
+                    <div class="gauge-container d-flex flex-column align-items-center">
+                        <div class="gauge-wrapper" style="width: 80px; height: 40px; position: relative;">
+                            <svg width="80" height="40" viewBox="0 0 100 50">
+                                <!-- Background Path -->
+                                <path d="M 10 50 A 40 40 0 0 1 90 50" fill="none" stroke="#334155" stroke-width="12" stroke-linecap="round" />
+                                <!-- Progress Path -->
+                                <path class="lighthouse-gauge" 
+                                      d="M 10 50 A 40 40 0 0 1 90 50" 
+                                      fill="none" 
+                                      stroke="#22c55e" 
+                                      stroke-width="12" 
+                                      stroke-linecap="round"
+                                      stroke-dasharray="125.6" 
+                                      stroke-dashoffset="125.6"
+                                      data-value="{{ projeto.performance_metrics.Lighthouse|default:100 }}" />
+                            </svg>
+                            <div class="gauge-text position-absolute w-100 text-center" style="bottom: 0; left: 0;">
+                                <span class="gauge-value fw-bold" style="font-size: 0.9rem;">{{ projeto.performance_metrics.Lighthouse|default:100 }}</span>
+                            </div>
+                        </div>
+                        <span class="small text-muted mt-1 fw-bold">Lighthouse</span>
+                    </div>
+                    
+                    {% if projeto.mostrar_live_view and projeto.link_demo or projeto.mostrar_repo and projeto.link_repo %}
+                    <div class="d-flex gap-2">
+                        {% if projeto.mostrar_live_view and projeto.link_demo %}
+                        <a href="{{ projeto.link_demo }}" target="_blank" class="btn btn-zenith btn-sm d-flex align-items-center gap-2 px-3" title="Live Preview">
+                            <i class="fas fa-play small"></i> Live View
+                        </a>
+                        {% endif %}
+                        {% if projeto.mostrar_repo and projeto.link_repo %}
+                        <a href="{{ projeto.link_repo }}" target="_blank" class="btn btn-outline-light btn-sm d-flex align-items-center gap-2 px-3" title="Código Fonte">
+                            <i class="fab fa-github"></i> Repo
+                        </a>
+                        {% endif %}
+                    </div>
+                    {% endif %}
+                    {% if user.is_authenticated %}
+                    <div class="position-absolute top-0 start-0 m-3" style="z-index: 10;">
+                        <form action="{% url 'core:excluir_projeto' projeto.id %}" method="post" onsubmit="return confirm('Tem certeza que deseja excluir este projeto?')">
+                            {% csrf_token %}
+                            <button type="submit" class="btn btn-sm btn-danger rounded-circle p-2" title="Excluir Projeto">
+                                <i class="fas fa-trash-alt"></i>
+                            </button>
+                        </form>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+    {% empty %}
+    <div class="col-12 text-center py-5">
+        <div class="card card-system p-5">
+            <i class="fas fa-search display-1 text-muted mb-4"></i>
+            <h3 class="text-white">Nenhum projeto encontrado</h3>
+            <p class="text-muted">Estamos trabalhando em novas soluções incríveis.</p>
+        </div>
+    </div>
+    {% endfor %}
+</div>
+
+<script>
+    function updateGauges() {
+        document.querySelectorAll('.lighthouse-gauge').forEach(gauge => {
+            const value = parseFloat(gauge.getAttribute('data-value')) || 100;
+            // 125.6 is approximately the circumference of a semi-circle with r=40
+            const offset = 125.6 * (1 - value / 100);
+            gauge.style.strokeDashoffset = offset;
+            
+            // Color logic
+            if (value >= 90) gauge.style.stroke = '#22c55e'; // Green
+            else if (value >= 50) gauge.style.stroke = '#eab308'; // Yellow
+            else gauge.style.stroke = '#ef4444'; // Red
+        });
+    }
+    updateGauges();
+</script>
+
+<style>
+    .backdrop-blur {
+        backdrop-filter: blur(8px);
+        background: rgba(15, 23, 42, 0.6) !important;
+    }
+    .object-fit-cover { object-fit: cover; }
+
+    /* Gauge Style */
+    .gauge-wrapper {
+        width: 80px;
+        height: 40px;
+        position: relative;
+        overflow: hidden;
+    }
+    .gauge-body {
+        width: 80px;
+        height: 80px;
+        background: #334155;
+        position: relative;
+        border-radius: 50%;
+    }
+    .gauge-fill {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: var(--zenith-primary);
+        border-radius: 50%;
+        clip-path: polygon(0 0, 100% 0, 100% 50%, 0 50%);
+        transform-origin: center center;
+        transition: transform 1s ease;
+    }
+    .gauge-cover {
+        width: 60px;
+        height: 60px;
+        background: var(--zenith-dark);
+        border-radius: 50%;
+        position: absolute;
+        top: 10px;
+        left: 10px;
+        display: flex;
+        align-items: flex-end;
+        justify-content: center;
+        padding-bottom: 5px;
+    }
+    .gauge-value {
+        font-size: 0.8rem;
+        font-weight: 800;
+        color: white;
+    }
+</style>

@@ -1,0 +1,114 @@
+{% extends 'core/base.html' %}
+
+{% block content %}
+<div class="row justify-content-center py-5">
+    <div class="col-md-8">
+        <div class="card card-system p-4 border-0 shadow-lg">
+            <h2 class="mb-4 text-center text-zenith">Postar Novo Projeto Zenith</h2>
+            
+            {% if form.errors %}
+            <div class="alert alert-danger">
+                <strong>Erro ao salvar:</strong>
+                <ul class="mb-0">
+                {% for field in form %}
+                    {% for error in field.errors %}
+                        <li>{{ field.label }}: {{ error }}</li>
+                    {% endfor %}
+                {% endfor %}
+                {% for error in form.non_field_errors %}
+                    <li>{{ error }}</li>
+                {% endfor %}
+                </ul>
+            </div>
+            {% endif %}
+
+            <form action="{% url 'core:postar_projeto' %}" method="post" enctype="multipart/form-data" class="row g-4">
+                {% csrf_token %}
+                
+                <div class="col-md-6">
+                    <label class="form-label">Nome do App</label>
+                    <input type="text" name="nome" id="id_nome" class="form-control" required>
+                </div>
+                
+                <div class="col-md-6">
+                    <label class="form-label text-muted small">Slug (Automático)</label>
+                    <input type="text" name="slug" id="id_slug" class="form-control">
+                </div>
+                
+                <div class="col-12">
+                    <label class="form-label">Descrição Curta</label>
+                    <textarea name="descricao_curta" id="id_descricao_curta" class="form-control" rows="3" required></textarea>
+                </div>
+                
+                <div class="col-md-6">
+                    <label class="form-label">Thumbnail</label>
+                    <input type="file" name="thumbnail" id="id_thumbnail" class="form-control" required>
+                </div>
+
+                <div class="col-md-6">
+                    <label class="form-label">Preview Video (GIF/MP4)</label>
+                    <input type="file" name="preview_video" id="id_preview_video" class="form-control">
+                </div>
+
+                <div class="col-12">
+                    <label class="form-label">Tecnologias (ex: React, Django, AWS)</label>
+                    <input type="text" name="tecnologias" id="id_tecnologias" class="form-control" placeholder="React, Django, AWS">
+                </div>
+
+                <div class="col-12">
+                    <label class="form-label">Performance Metrics (JSON)</label>
+                    <textarea name="performance_metrics" id="id_performance_metrics" class="form-control" rows="2">{"Lighthouse": 98}</textarea>
+                </div>
+
+                <div class="col-md-6">
+                    <label class="form-label">Link Demo</label>
+                    <input type="url" name="link_demo" id="id_link_demo" class="form-control">
+                </div>
+
+                <div class="col-md-6">
+                    <label class="form-label">Link Repo</label>
+                    <input type="url" name="link_repo" id="id_link_repo" class="form-control">
+                </div>
+
+                <div class="col-md-6">
+                    <div class="form-check form-switch mt-2">
+                        <input class="form-check-input" type="checkbox" name="mostrar_live_view" id="id_mostrar_live_view" checked>
+                        <label class="form-check-label text-white" for="id_mostrar_live_view">Exibir Botão Live View</label>
+                    </div>
+                </div>
+
+                <div class="col-md-6">
+                    <div class="form-check form-switch mt-2">
+                        <input class="form-check-input" type="checkbox" name="mostrar_repo" id="id_mostrar_repo" checked>
+                        <label class="form-check-label text-white" for="id_mostrar_repo">Exibir Botão Repo</label>
+                    </div>
+                </div>
+
+                <div class="col-12">
+                    <label class="form-label">Categoria</label>
+                    {{ form.categoria }}
+                </div>
+
+                <div class="col-12 mt-5 text-center">
+                    <button type="submit" class="btn btn-zenith px-5 w-100">Subir Projeto</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // Gerar Slug automaticamente a partir do nome
+    document.querySelector('#id_nome').addEventListener('input', function() {
+        let name = this.value;
+        let slug = name.toLowerCase()
+            .replace(/[^\w ]+/g, '')
+            .replace(/ +/g, '-');
+        document.querySelector('#id_slug').value = slug;
+    });
+
+    Dropzone.autoDiscover = false;
+</script>
+{% endblock %}

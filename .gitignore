@@ -1,0 +1,24 @@
+# Python (Arquivos compilados)
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Ambiente Virtual (NUNCA envie isso, o cliente instala o dele)
+venv/
+env/
+.env
+
+# Banco de Dados Local (Mantenha o banco no PC, não no GitHub)
+db.sqlite3
+
+# Arquivos de Mídia e Static (Fotos que você sobe nos testes)
+media/
+staticfiles/
+
+# Sistema Operacional e IDE
+.DS_Store
+.vscode/
+.idea/
+
+# Notebook Aspire 5 (Arquivos temporários e de log)
+*.log

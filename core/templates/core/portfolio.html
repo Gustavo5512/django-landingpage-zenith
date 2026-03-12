@@ -1,0 +1,135 @@
+{% extends 'core/base.html' %}
+
+{% block content %}
+<section id="sobre" class="hero-section text-center mb-5">
+    <div class="container">
+        <h1 class="display-3 fw-bold mb-4">
+            <span class="text-zenith">Zenith Devs Studios</span>
+        </h1>
+        
+        <div class="d-flex justify-content-center gap-5 mb-5">
+            <a href="https://github.com/Gustavo5512?tab=repositories" target="_blank" class="social-logo" title="GitHub">
+                <i class="fab fa-github"></i>
+            </a>
+            <a href="https://www.instagram.com/zenith.devstudio/" target="_blank" class="social-logo" title="Instagram">
+                <i class="fab fa-instagram"></i>
+            </a>
+            <a href="https://wa.me/5589994375818" target="_blank" class="social-logo" title="WhatsApp">
+                <i class="fab fa-whatsapp"></i>
+            </a>
+        </div>
+
+        <div class="row justify-content-center mb-5">
+            <div class="col-md-8 card-system p-4 text-start">
+                <h4 class="text-zenith mb-3">Quem somos</h4>
+                <p class="mb-4">A <span class="text-info fw-bold">Zenith Devs Studios</span> é um estúdio de desenvolvimento focado em Web Apps de alta performance.</p>
+                
+                <h4 class="text-zenith mb-3">O que fazemos</h4>
+                <p class="mb-4">Transformamos fluxos de negócio em sistemas robustos usando Django. Nosso foco não é apenas o visual, mas a arquitetura por trás da tela: código limpo, segurança de dados e velocidade de resposta.</p>
+                
+                <h4 class="text-zenith mb-3">Nosso padrão</h4>
+                <p class="mb-0 italic">"Se não é escalável, não é Zenith."</p>
+            </div>
+        </div>
+    </div>
+</section>
+
+<section id="certificados" class="mb-5 py-5">
+    <div class="container">
+        <div class="text-center mb-5">
+            <h2 class="display-5 fw-bold text-white">Certificações & Qualificações</h2>
+            <p class="text-muted">Nossa expertise comprovada por instituições globais.</p>
+        </div>
+        
+        <div class="row g-4 justify-content-center">
+            {% for cert in certificados %}
+            <div class="col-lg-4 col-md-6">
+                <div class="card card-system h-100 p-4 border-0 text-center d-flex flex-column align-items-center position-relative">
+                    {% if user.is_authenticated %}
+                    <div class="position-absolute top-0 end-0 m-3" style="z-index: 10;">
+                        <form action="{% url 'core:excluir_certificado' cert.id %}" method="post" onsubmit="return confirm('Tem certeza que deseja excluir este certificado?')">
+                            {% csrf_token %}
+                            <button type="submit" class="btn btn-sm btn-danger rounded-circle p-2" title="Excluir Certificado">
+                                <i class="fas fa-trash-alt"></i>
+                            </button>
+                        </form>
+                    </div>
+                    {% endif %}
+                    
+                    <div class="logo-container mb-3 d-flex align-items-center justify-content-center" style="height: 120px; width: 100%;">
+                        <img src="{{ cert.logotipo.url }}" class="img-fluid rounded" style="max-height: 100%; max-width: 100%; object-fit: contain;" alt="{{ cert.instituicao }}">
+                    </div>
+                    <h4 class="fw-bold text-white mb-2">{{ cert.nome }}</h4>
+                    <p class="text-info mb-2">{{ cert.instituicao }}</p>
+                    <p class="text-muted small flex-grow-1" style="font-size: 0.95rem;">{{ cert.descricao }}</p>
+                    
+                    <button type="button" class="btn btn-sm btn-zenith mt-3 w-100 py-2" data-bs-toggle="modal" data-bs-target="#modalCert{{ cert.id }}">
+                        <i class="fas fa-certificate me-2"></i>Ver Certificado
+                    </button>
+                </div>
+
+                <!-- Modal Certificado - Fora do card para evitar bugs de transição -->
+                <div class="modal fade" id="modalCert{{ cert.id }}" tabindex="-1" aria-hidden="true">
+                    <div class="modal-dialog modal-dialog-centered modal-xl">
+                        <div class="modal-content bg-dark border-secondary shadow-2xl">
+                            <div class="modal-header border-secondary">
+                                <h5 class="modal-title text-zenith fw-bold">{{ cert.nome }}</h5>
+                                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                            </div>
+                            <div class="modal-body text-center p-2 bg-black overflow-hidden">
+                                <img src="{{ cert.imagem_certificado.url }}" class="img-fluid rounded shadow-lg" style="max-height: 85vh; width: auto; display: inline-block;" alt="Certificado {{ cert.nome }}">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% empty %}
+            <div class="col-12 text-center py-4">
+                <p class="text-muted">Nenhum certificado cadastrado ainda.</p>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</section>
+
+<div id="portfolio" class="row mb-5 text-center">
+    <div class="col-12">
+        <h2 class="display-5 fw-bold text-white mb-4">Portfólio de Projetos</h2>
+        
+        <div class="d-flex justify-content-center flex-wrap gap-2 mt-4" id="category-filters">
+            <button class="btn btn-zenith active" data-category="todos">Todos</button>
+            {% for categoria in categorias %}
+            <button class="btn btn-outline-info rounded-pill px-4" data-category="{{ categoria.slug }}">{{ categoria.nome }}</button>
+            {% endfor %}
+        </div>
+    </div>
+</div>
+
+<div id="projeto-container" class="mb-5">
+    {% include 'core/includes/projeto_cards.html' with projetos=projetos %}
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    $(document).ready(function() {
+        $('#category-filters button').click(function() {
+            $('#category-filters button').removeClass('active');
+            $(this).addClass('active');
+            
+            let category = $(this).data('category');
+            
+            $.ajax({
+                url: "{% url 'core:filtrar_projetos' %}",
+                data: {
+                    'categoria': category
+                },
+                success: function(data) {
+                    $('#projeto-container').html(data);
+                    if (typeof updateGauges === "function") updateGauges();
+                }
+            });
+        });
+    });
+</script>
+{% endblock %}

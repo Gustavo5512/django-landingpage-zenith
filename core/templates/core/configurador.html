@@ -1,0 +1,92 @@
+{% extends 'core/base.html' %}
+
+{% block content %}
+<div class="row justify-content-center py-5">
+    <div class="col-md-7">
+        <div class="card card-system p-5 shadow-2xl">
+            <div class="text-center mb-5">
+                <h2 class="display-6 fw-bold text-zenith mb-3">Solicite um Orçamento</h2>
+                <p class="text-muted">Preencha os dados abaixo e nossa equipe entrará em contato via <span class="text-success fw-bold">WhatsApp</span>.</p>
+            </div>
+            
+            <form id="orcamento-form" method="post" class="needs-validation" novalidate>
+                {% csrf_token %}
+                
+                <div class="mb-4">
+                    <label class="form-label">Nome Completo</label>
+                    <input type="text" name="nome" id="id_nome" class="form-control" placeholder="Seu nome completo" required>
+                </div>
+
+                <div class="row mb-4">
+                    <div class="col-md-6 mb-3 mb-md-0">
+                        <label class="form-label">E-mail</label>
+                        <input type="email" name="email" id="id_email" class="form-control" placeholder="Seu melhor e-mail" required>
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label">WhatsApp</label>
+                        <input type="text" name="whatsapp" id="id_whatsapp" class="form-control" placeholder="(00) 00000-0000" required>
+                    </div>
+                </div>
+
+                <div class="mb-5">
+                    <label class="form-label">Descrição do Projeto</label>
+                    <textarea name="descricao_projeto" id="id_descricao_projeto" class="form-control" rows="4" placeholder="Conte-nos sobre seu projeto..." required></textarea>
+                    <div class="form-text text-muted">Explique brevemente o que você precisa construir.</div>
+                </div>
+
+                <div class="text-center">
+                    <button type="submit" class="btn btn-zenith w-100 py-3 text-uppercase tracking-wider">
+                        Enviar Solicitação
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    $(document).ready(function() {
+        $('#orcamento-form').on('submit', function(e) {
+            e.preventDefault();
+            
+            let form = $(this);
+            let btn = form.find('button');
+            btn.prop('disabled', true).html('<span class="spinner-border spinner-border-sm"></span> Enviando...');
+
+            $.ajax({
+                url: window.location.href,
+                type: 'POST',
+                data: form.serialize(),
+                headers: {
+                    'X-Requested-With': 'XMLHttpRequest'
+                },
+                success: function(response) {
+                    if (response.status === 'success') {
+                        window.location.href = response.redirect_url;
+                    }
+                },
+                error: function(xhr) {
+                    btn.prop('disabled', false).text('Enviar Solicitação');
+                    let errorMsg = 'Ocorreu um erro ao enviar sua solicitação.';
+                    if (xhr.responseJSON && xhr.responseJSON.errors) {
+                        errorMsg += '\n' + JSON.stringify(xhr.responseJSON.errors);
+                    }
+                    alert(errorMsg);
+                }
+            });
+        });
+    });
+</script>
+<style>
+    .tracking-wider { letter-spacing: 0.1em; }
+    #orcamento-form .form-control {
+        transition: border-color 0.3s ease, box-shadow 0.3s ease;
+    }
+    #orcamento-form .form-control:focus {
+        border-color: var(--zenith-primary);
+        box-shadow: 0 0 0 4px rgba(0, 210, 255, 0.1);
+    }
+</style>
+{% endblock %}

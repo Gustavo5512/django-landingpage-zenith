@@ -1,0 +1,49 @@
+{% extends 'core/base.html' %}
+
+{% block content %}
+<div class="row justify-content-center py-5">
+    <div class="col-md-8">
+        <div class="card card-system p-4 border-0 shadow-lg">
+            <h2 class="mb-4 text-center text-zenith">Cadastrar Qualificação / Certificado</h2>
+            
+            <form action="{% url 'core:postar_certificado' %}" method="post" enctype="multipart/form-data" class="row g-4">
+                {% csrf_token %}
+                
+                <div class="col-md-6">
+                    <label class="form-label">Nome da Qualificação</label>
+                    <input type="text" name="nome" class="form-control" placeholder="Ex: Arquiteto de Sistemas" required>
+                </div>
+                
+                <div class="col-md-6">
+                    <label class="form-label">Instituição Emissora</label>
+                    <input type="text" name="instituicao" class="form-control" placeholder="Ex: Google, AWS, MEC" required>
+                </div>
+                
+                <div class="col-md-6">
+                    <label class="form-label">Logotipo da Instituição</label>
+                    <input type="file" name="logotipo" class="form-control" required>
+                </div>
+
+                <div class="col-md-6">
+                    <label class="form-label">Foto do Certificado</label>
+                    <input type="file" name="imagem_certificado" class="form-control" required>
+                </div>
+
+                <div class="col-12">
+                    <label class="form-label">Descrição da Competência</label>
+                    <textarea name="descricao" class="form-control" rows="3" placeholder="Ex: Segurança de Dados, Performance Máxima..." required></textarea>
+                </div>
+
+                <div class="col-md-6">
+                    <label class="form-label">Peso / Ordem (Menor aparece primeiro)</label>
+                    <input type="number" name="ordem" class="form-control" value="0">
+                </div>
+
+                <div class="col-12 mt-5 text-center">
+                    <button type="submit" class="btn btn-zenith px-5 w-100">Cadastrar Certificado</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}
