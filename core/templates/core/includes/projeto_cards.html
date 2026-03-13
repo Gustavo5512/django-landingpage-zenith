@@ -2,12 +2,11 @@
     {% for projeto in projetos %}
     <div class="col-lg-4 col-md-6">
         <div class="card card-system h-100 shadow-lg border-0">
-            <div class="preview-container position-relative {% if not projeto.preview_video %}no-video{% endif %}" style="height: 240px; border-bottom: 2px solid rgba(255,255,255,0.05);">
+            <div class="preview-container position-relative {% if not projeto.youtube_id %}no-video{% endif %}" style="height: 240px; border-bottom: 2px solid rgba(255,255,255,0.05);">
                 <img src="{{ projeto.thumbnail.url }}" class="preview-img" alt="{{ projeto.nome }}">
-                {% if projeto.preview_video %}
-                <video class="preview-video" loop muted playsinline autoplay>
-                    <source src="{{ projeto.preview_video.url }}" type="video/mp4">
-                </video>
+                {% if projeto.youtube_id %}
+                <div class="preview-video w-100 h-100 youtube-player" data-video-id="{{ projeto.youtube_id }}"></div>
+                <div class="preview-overlay"></div>
                 {% endif %}
                 <div class="position-absolute top-0 end-0 m-3">
                     <span class="badge badge-zenith backdrop-blur border-0">{{ projeto.categoria.nome }}</span>
@@ -90,6 +89,57 @@
 </div>
 
 <script>
+    // Carregar a API do YouTube se ainda não estiver carregada
+    if (typeof YT === 'undefined' || typeof YT.Player === 'undefined') {
+        var tag = document.createElement('script');
+        tag.src = "https://www.youtube.com/iframe_api";
+        var firstScriptTag = document.getElementsByTagName('script')[0];
+        firstScriptTag.parentNode.insertBefore(tag, firstScriptTag);
+    }
+
+    var players = [];
+    function onYouTubeIframeAPIReady() {
+        document.querySelectorAll('.youtube-player').forEach((el, index) => {
+            const videoId = el.getAttribute('data-video-id');
+            const player = new YT.Player(el, {
+                height: '100%',
+                width: '100%',
+                videoId: videoId,
+                playerVars: {
+                    'autoplay': 1,
+                    'mute': 1,
+                    'controls': 0,
+                    'loop': 1,
+                    'playlist': videoId,
+                    'playsinline': 1,
+                    'rel': 0,
+                    'modestbranding': 1,
+                    'disablekb': 1
+                },
+                events: {
+                    'onReady': onPlayerReady,
+                    'onStateChange': onPlayerStateChange
+                }
+            });
+            players.push(player);
+        });
+    }
+
+    function onPlayerReady(event) {
+        event.target.playVideo();
+    }
+
+    function onPlayerStateChange(event) {
+        if (event.data === YT.PlayerState.ENDED) {
+            event.target.playVideo();
+        }
+    }
+
+    // Caso a API já esteja carregada (navegação AJAX), inicializar manualmente
+    if (window.YT && window.YT.Player) {
+        onYouTubeIframeAPIReady();
+    }
+
     function updateGauges() {
         document.querySelectorAll('.lighthouse-gauge').forEach(gauge => {
             const value = parseFloat(gauge.getAttribute('data-value')) || 100;

@@ -20,7 +20,7 @@ class Projeto(models.Model):
     slug = models.SlugField(unique=True, blank=True)
     descricao_curta = models.TextField()
     thumbnail = models.ImageField(upload_to='portfolio/thumbnails/')
-    preview_video = models.FileField(upload_to='portfolio/previews/', null=True, blank=True)
+    youtube_url = models.URLField(blank=True, null=True, help_text="Link do vídeo no YouTube")
     tecnologias = models.CharField(max_length=200) # Ex: React, Django, AWS
     performance_metrics = models.JSONField(default=dict) # Score do Lighthouse, etc.
     link_demo = models.URLField(blank=True)
@@ -29,6 +29,16 @@ class Projeto(models.Model):
     mostrar_repo = models.BooleanField(default=True)
     categoria = models.ForeignKey(Categoria, on_delete=models.SET_NULL, null=True, related_name='projetos')
     data_criacao = models.DateTimeField(auto_now_add=True)
+
+    @property
+    def youtube_id(self):
+        if not self.youtube_url:
+            return None
+        # Suporta vários formatos de link do YouTube (v=, /v/, embed/, youtu.be/, watch?v=, shorts/)
+        import re
+        regex = r'(?:v=|\/v\/|embed\/|youtu\.be\/|watch\?v=|\/shorts\/|\/)([a-zA-Z0-9_-]{11})'
+        match = re.search(regex, self.youtube_url)
+        return match.group(1) if match else None
 
     def save(self, *args, **kwargs):
         if not self.slug:
